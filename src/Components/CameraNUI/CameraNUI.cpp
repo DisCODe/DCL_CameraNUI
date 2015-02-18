@@ -18,11 +18,18 @@ CameraNUI::CameraNUI(const std::string & name) :
 		Base::Component(name),
 		sync("sync", true),
 		m_camera_info(640, 480, 319.5, 239.5, 525, 525),
-		index("index", 0) {
+		index("index", 0),
+		angle("angle", 0, "range"),
+		triggered("triggered", false) {
 
 	LOG(LTRACE)<< "Hello CameraNUI\n";
 	registerProperty(sync);
 	registerProperty(index);
+	registerProperty(triggered);
+	
+	angle.addConstraint("-45");
+	angle.addConstraint("45");
+	registerProperty(angle);
 }
 
 CameraNUI::~CameraNUI() {
@@ -32,11 +39,16 @@ CameraNUI::~CameraNUI() {
 void CameraNUI::prepareInterface() {
 
 	// Register data streams
+	registerStream("trigger", &trigger);
 	registerStream("out_img", &outImg);
 	registerStream("out_depth", &outDepthMap);
 	registerStream("out_camera_info", &camera_info);
+	registerStream("in_angle", &in_angle);
 
-
+  registerHandler("setAngle", boost::bind(&CameraNUI::setAngle, this));
+  addDependency("setAngle", &in_angle);
+  
+  registerHandler("setAngleFromProperty", boost::bind(&CameraNUI::setAngleFromProperty, this));
 
 	h_onNextImage.setup(this, &CameraNUI::onNextImage);
 	registerHandler("onNextImage", &h_onNextImage);
@@ -63,6 +75,13 @@ void CameraNUI::onNextImage() {
 	uint32_t ts;
 	int ret;
 
+	if (triggered && trigger.empty()) {
+		return;
+	} else {
+		// clear all triggers
+		while(!trigger.empty()) trigger.read();
+	}
+
 	// retrieve color image
 	ret = freenect_sync_get_video((void**)&rgb, &ts, index, FREENECT_VIDEO_RGB);
 	cv::Mat tmp_rgb(480, 640, CV_8UC3, rgb);
@@ -78,6 +97,19 @@ void CameraNUI::onNextImage() {
 	outDepthMap.write(depthFrame);
 
 	camera_info.write(m_camera_info);
+}
+
+void CameraNUI::setAngle() {
+	int angle = in_angle.read();
+	freenect_sync_set_tilt_degs(angle, index);
+}
+
+void CameraNUI::setAngleFromProperty() {
+	CLOG(LNOTICE) << "Setting angle: " << angle;
+	freenect_sync_set_tilt_degs(angle, index);
+	freenect_raw_tilt_state * state;
+	freenect_sync_get_tilt_state(&state, index);
+	CLOG(LNOTICE) << "Angle: " << state->tilt_angle << ", state: " << state->tilt_status;
 }
 
 bool CameraNUI::onStop() {
