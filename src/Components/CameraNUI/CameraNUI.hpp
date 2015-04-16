@@ -70,13 +70,20 @@ protected:
 	 * Event handler function.
 	 */
 	void onNextImage();
+	void setAngle();
+	void setAngleFromProperty();
+
 
 	/// Event handler.
 	Base::EventHandler <CameraNUI> h_onNextImage;
 
 	Base::Property <bool> sync;
 	Base::Property <int> index;
+	Base::Property <int> angle;
+	
+	Base::DataStreamIn <int> in_angle;
 
+	Base::DataStreamIn <Base::UnitType> trigger;
 	Base::DataStreamOut <cv::Mat> outImg;
 	Base::DataStreamOut <cv::Mat> outDepthMap;
 	Base::DataStreamOut <Types::CameraInfo> camera_info;
@@ -86,6 +93,8 @@ protected:
 	cv::Mat show;
 
 	Types::CameraInfo m_camera_info;
+	
+	Base::Property<bool> triggered;
 };
 
 } //: namespace CameraNUI

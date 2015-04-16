@@ -34,7 +34,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-
 if (LIBFREENECT_LIBRARIES AND LIBFREENECT_INCLUDE_DIRS)
   # in cache already
   set(LIBFREENECT_FOUND TRUE)
@@ -43,6 +42,7 @@ else (LIBFREENECT_LIBRARIES AND LIBFREENECT_INCLUDE_DIRS)
     NAMES
 	libfreenect.h
     PATHS
+      "${LIBFREENECT_DIR}/include/libfreenect"
       /usr/include/libfreenect
       /usr/local/include/libfreenect
       /opt/local/include/libfreenect
@@ -55,6 +55,7 @@ else (LIBFREENECT_LIBRARIES AND LIBFREENECT_INCLUDE_DIRS)
     NAMES
 	libfreenect-registration.h
     PATHS
+      "${LIBFREENECT_DIR}/include/libfreenect"
       /usr/include/libfreenect
       /usr/local/include/libfreenect
       /opt/local/include/libfreenect
@@ -67,6 +68,7 @@ else (LIBFREENECT_LIBRARIES AND LIBFREENECT_INCLUDE_DIRS)
     NAMES
 	libfreenect.so
     PATHS
+      ${LIBFREENECT_DIR}/lib
       /usr/lib
       /usr/local/lib
   )
@@ -75,6 +77,7 @@ else (LIBFREENECT_LIBRARIES AND LIBFREENECT_INCLUDE_DIRS)
     NAMES
       freenect
     PATHS
+      ${LIBFREENECT_DIR}/lib
       /usr/local/lib64
       /usr/lib
       /usr/local/lib
@@ -86,6 +89,7 @@ else (LIBFREENECT_LIBRARIES AND LIBFREENECT_INCLUDE_DIRS)
     NAMES
       freenect_sync
     PATHS
+      ${LIBFREENECT_DIR}/lib
       /usr/local/lib64
       /usr/lib
       /usr/local/lib

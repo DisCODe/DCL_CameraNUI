@@ -108,10 +108,10 @@ void DepthConverter::convertToPointCloudMap(cv::Mat& data, cv::Mat& dataOut) {
 	// and XnOpenNI.cpp from OpenNI
 	// The whole idea behind is to transform coordinates and have them in real
 	// world units (like meters)
-	double fx_d = 1.0 / 5.9421434211923247e+02;
-	double fy_d = 1.0 / 5.9104053696870778e+02;
-	double cx_d = 3.1930780975300314e+02;
-	double cy_d = 2.4273913761751615e+02;
+	double fx_d = 1.0 / 528.363;
+	double fy_d = 1.0 / 525.912;
+	double cx_d = 312.05;
+	double cy_d = 264.32;
 
 	cv::Mat pointCloud_XYZ(ROWS, COLS, CV_32FC3,
 			cv::Scalar::all (INVALID_PIXEL));
@@ -172,7 +172,7 @@ void DepthConverter::convertToDisparityMap32f(cv::Mat& data, cv::Mat& dataOut) {
 }
 
 void DepthConverter::convertToValidPixelsMap(cv::Mat& data, cv::Mat& dataOut) {
-	dataOut = (data != INVALID_PIXEL);
+	dataOut = (data != 0);
 }
 
 typedef struct{uchar r; uchar g; uchar b;} color;
