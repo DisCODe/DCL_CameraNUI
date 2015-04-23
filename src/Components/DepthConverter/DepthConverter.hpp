@@ -12,6 +12,7 @@
 #include "Property.hpp"
 
 #include "DepthModeTranslator.hpp"
+#include <Types/CameraInfo.hpp>
 
 #include <opencv2/core/core.hpp>
 
@@ -73,6 +74,9 @@ protected:
 	/// Output data stream - processed image
 	Base::DataStreamOut <cv::Mat> out_img;
 
+	/// Input data stream - camera info required for transformation of depth to xyz coordinates
+	Base::DataStreamIn<Types::CameraInfo> in_camera_info;
+
 private:
 	void convertToDisparityMap(cv::Mat& data, cv::Mat& dataOut);
 	void convertToDisparityMap32f(cv::Mat& data, cv::Mat& dataOut);
@@ -95,8 +99,8 @@ private:
 	static const int BASELINE = 75;
 	static const int FOCAL_LENGTH = 575;
 	// for now only this resolution fully supported
-	static const int COLS = 640;
-	static const int ROWS = 480;
+//	static const int COLS = 640;
+//	static const int ROWS = 480;
 
     Base::Property<DepthMode, DepthModeTranslator> depthMode;
 

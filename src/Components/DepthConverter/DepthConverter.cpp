@@ -27,15 +27,14 @@ DepthConverter::~DepthConverter() {
 void DepthConverter::prepareInterface() {
 
 	// Register data streams, events and event handlers HERE!
-	h_onNewDepth.setup(this, &DepthConverter::onNewDepth);
-	registerHandler("onNewDepth", &h_onNewDepth);
 	registerStream("in_depth", &in_depth);
-
-	addDependency("onNewDepth", &in_depth);
+	registerStream("in_camera_info", &in_camera_info);
 
 	registerStream("out_depth", &out_img);
 	registerStream("out_img", &out_img);
 
+	h_onNewDepth.setup(this, &DepthConverter::onNewDepth);
+	registerHandler("onNewDepth", &h_onNewDepth);
 	addDependency("onNewDepth", &in_depth);
 }
 
@@ -99,42 +98,58 @@ void DepthConverter::onNewDepth() {
  * Based on OpenCv HighGUI
  */
 void DepthConverter::convertToPointCloudMap(cv::Mat& data, cv::Mat& dataOut) {
-	// !! This data are not exactly the same as when using opencv. Might need
-	// some adjustments in the future. It's supposed to imitate the function
-	// xnConvertProjectiveToRealWorld from OpenNI. Some attempt for this
-	// was made in discussion on google groups
-	// "ConvertProjectiveToRealWorld without camera connected Indstillinger"
-	// To move further make use of content in the file cap_openni.cpp from OpenCv
-	// and XnOpenNI.cpp from OpenNI
-	// The whole idea behind is to transform coordinates and have them in real
-	// world units (like meters)
-	double fx_d = 1.0 / 5.9421434211923247e+02;
-	double fy_d = 1.0 / 5.9104053696870778e+02;
-	double cx_d = 3.1930780975300314e+02;
-	double cy_d = 2.4273913761751615e+02;
+	try{ 
+		// !! This data are not exactly the same as when using opencv. Might need
+		// some adjustments in the future. It's supposed to imitate the function
+		// xnConvertProjectiveToRealWorld from OpenNI. Some attempt for this
+		// was made in discussion on google groups
+		// "ConvertProjectiveToRealWorld without camera connected Indstillinger"
+		// To move further make use of content in the file cap_openni.cpp from OpenCv
+		// and XnOpenNI.cpp from OpenNI
+		// The whole idea behind is to transform coordinates and have them in real
+		// world units (like meters)
+	/*	double fx_d = 0.001 / 525;//5.9421434211923247e+02;
+		double fy_d = 0.001 / 525;//5.9104053696870778e+02;
+		double cx_d = 319.5;//3.1930780975300314e+02;
+		double cy_d = 239.5;//2.4273913761751615e+02;*/
 
-	cv::Mat pointCloud_XYZ(ROWS, COLS, CV_32FC3,
-			cv::Scalar::all (INVALID_PIXEL));
+		// Check the presence of camera info.
+		if (in_camera_info.empty())
+			throw exception();
 
-	for (int y = 0; y < ROWS; y++) {
-		for (int x = 0; x < COLS; x++) {
-			double depth = data.at<unsigned short>(y, x);
-			// Check for invalid measurements
-			if (depth == INVALID_PIXEL) // not valid
-				pointCloud_XYZ.at < cv::Point3f > (y, x) = cv::Point3f(
-						INVALID_COORDINATE, INVALID_COORDINATE,
-						INVALID_COORDINATE);
-			else {
-				float xx = ((x - cx_d) * depth * fx_d) * 0.001f;
-				float yy = ((y - cy_d) * depth * fy_d) * 0.001f;
-				float dd = depth * 0.001f;
-				float zz = sqrt(dd*dd-xx*xx-yy*yy);
-				pointCloud_XYZ.at < cv::Point3f > (y, x) = cv::Point3f(xx, yy, dd);
+		// Retrieve camera info.
+		Types::CameraInfo camera_info = in_camera_info.read();
+		double fx_d = 0.001 / camera_info.fx();
+		double fy_d = 0.001 / camera_info.fy();
+		double cx_d = camera_info.cx();
+		double cy_d = camera_info.cy();
+
+		cv::Mat pointCloud_XYZ(camera_info.height(), camera_info.width(), CV_32FC3,
+				cv::Scalar::all (INVALID_PIXEL));
+
+		for (int y = 0; y < camera_info.height(); y++) {
+			for (int x = 0; x < camera_info.width(); x++) {
+				double depth = data.at<unsigned short>(y, x);
+				// Check for invalid measurements
+				if (depth == INVALID_PIXEL) // not valid
+					pointCloud_XYZ.at < cv::Point3f > (y, x) = cv::Point3f(
+							INVALID_COORDINATE, INVALID_COORDINATE,
+							INVALID_COORDINATE);
+				else {
+					float xx = ((x - cx_d) * depth * fx_d);
+					float yy = ((y - cy_d) * depth * fy_d);
+					float dd = depth * 0.001f;
+					float zz = sqrt(dd*dd-xx*xx-yy*yy);
+					pointCloud_XYZ.at < cv::Point3f > (y, x) = cv::Point3f(xx, yy, dd);
+				}
 			}
 		}
-	}
 
-	pointCloud_XYZ.copyTo(dataOut);
+		pointCloud_XYZ.copyTo(dataOut);
+
+	}catch(...){
+		CLOG(LERROR) << "convertToPointCloudMap() requires camera info (in_camera_info)!\n";
+	}
 }
 
 /*
