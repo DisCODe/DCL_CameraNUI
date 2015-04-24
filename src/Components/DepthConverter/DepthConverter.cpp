@@ -33,8 +33,7 @@ void DepthConverter::prepareInterface() {
 	registerStream("out_depth", &out_img);
 	registerStream("out_img", &out_img);
 
-	h_onNewDepth.setup(this, &DepthConverter::onNewDepth);
-	registerHandler("onNewDepth", &h_onNewDepth);
+	registerHandler("onNewDepth", boost::bind(&DepthConverter::onNewDepth, this));
 	addDependency("onNewDepth", &in_depth);
 }
 

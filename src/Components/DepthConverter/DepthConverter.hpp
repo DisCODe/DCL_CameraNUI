@@ -65,17 +65,15 @@ protected:
 	 */
 	bool onStop();
 
-	/// Event handler.
-	Base::EventHandler <DepthConverter> h_onNewDepth;
+	/// Input data stream containing depth.
+	Base::DataStreamIn <cv::Mat, Base::DataStreamBuffer::Newest> in_depth;
 
-	/// Input data stream
-	Base::DataStreamIn <cv::Mat> in_depth;
+	/// Input data stream - camera info required for transformation of depth to xyz coordinates
+	Base::DataStreamIn<Types::CameraInfo, Base::DataStreamBuffer::Newest> in_camera_info;
 
 	/// Output data stream - processed image
 	Base::DataStreamOut <cv::Mat> out_img;
 
-	/// Input data stream - camera info required for transformation of depth to xyz coordinates
-	Base::DataStreamIn<Types::CameraInfo> in_camera_info;
 
 private:
 	void convertToDisparityMap(cv::Mat& data, cv::Mat& dataOut);
@@ -84,7 +82,7 @@ private:
 	void convertToValidPixelsMap(cv::Mat& data, cv::Mat& dataOut);
 	void convertToRainbowMap(cv::Mat& data, cv::Mat& dataOut);
 
-
+	// Process depth.
 	void onNewDepth();
 
 	// depth map normalization factor
@@ -102,7 +100,8 @@ private:
 //	static const int COLS = 640;
 //	static const int ROWS = 480;
 
-    Base::Property<DepthMode, DepthModeTranslator> depthMode;
+	/// Property enabling selection of processing mode.
+	Base::Property<DepthMode, DepthModeTranslator> depthMode;
 
 	cv::Mat m_depth;
 	cv::Mat m_out;
