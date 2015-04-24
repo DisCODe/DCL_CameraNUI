@@ -7,6 +7,8 @@ FILE(GLOB files *.cpp)
 # Find required packages
 FIND_PACKAGE( OpenCV REQUIRED )
 
+DISCODE_FIND_DCL(CvCoreTypes)
+
 # Create an executable file from sources:
 ADD_LIBRARY(DepthConverter SHARED ${files})
 
