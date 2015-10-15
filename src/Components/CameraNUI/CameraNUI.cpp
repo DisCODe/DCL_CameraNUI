@@ -20,13 +20,20 @@ CameraNUI::CameraNUI(const std::string & name) :
 		m_camera_info(640, 480, 319.5, 239.5, 525, 525),
 		index("index", 0),
 		angle("angle", 0, "range"),
-		triggered("triggered", false) {
+		triggered("triggered", false),
+		imageType("imageType", FREENECT_VIDEO_RGB, "combo" ) {
 
 	LOG(LTRACE)<< "Hello CameraNUI\n";
 	registerProperty(sync);
 	registerProperty(index);
 	registerProperty(triggered);
-	
+
+	imageType.addConstraint("FREENECT_VIDEO_RGB");
+	imageType.addConstraint("FREENECT_VIDEO_BAYER");
+	imageType.addConstraint("FREENECT_VIDEO_IR_8BIT");
+	registerProperty(imageType);
+
+
 	angle.addConstraint("-45");
 	angle.addConstraint("45");
 	registerProperty(angle);
@@ -47,7 +54,7 @@ void CameraNUI::prepareInterface() {
 
   registerHandler("setAngle", boost::bind(&CameraNUI::setAngle, this));
   addDependency("setAngle", &in_angle);
-  
+
   registerHandler("setAngleFromProperty", boost::bind(&CameraNUI::setAngleFromProperty, this));
 
 	h_onNextImage.setup(this, &CameraNUI::onNextImage);
@@ -83,9 +90,24 @@ void CameraNUI::onNextImage() {
 	}
 
 	// retrieve color image
-	ret = freenect_sync_get_video((void**)&rgb, &ts, index, FREENECT_VIDEO_RGB);
-	cv::Mat tmp_rgb(480, 640, CV_8UC3, rgb);
-	cv::cvtColor(tmp_rgb, cameraFrame, CV_RGB2BGR);
+	cv::Mat image_out;
+	ret = freenect_sync_get_video((void**)&rgb, &ts, index, imageType);
+	if(imageType == FREENECT_VIDEO_RGB) {
+        cv::Mat tmp_rgb(480, 640, CV_8UC3, rgb);
+        cv::cvtColor(tmp_rgb, image_out, CV_RGB2BGR);
+	}
+	if(imageType == FREENECT_VIDEO_IR_8BIT) {
+        cv::Mat tmp_gray(480, 640, CV_8UC1, rgb);
+        image_out = tmp_gray;
+	}
+	if(imageType == FREENECT_VIDEO_BAYER) {
+        cv::Mat tmp_gray(480, 640, CV_8UC1, rgb);
+        image_out = tmp_gray;
+	}
+
+	//
+
+	//
 
 	// retrieve depth image
 	ret = freenect_sync_get_depth((void**)&depth, &ts, index, FREENECT_DEPTH_REGISTERED);
@@ -93,7 +115,8 @@ void CameraNUI::onNextImage() {
 	tmp_depth.copyTo(depthFrame);
 
 	// write data to output streams
-	outImg.write(cameraFrame);
+	//outImg.write(cameraFrame);
+	outImg.write(image_out);
 	outDepthMap.write(depthFrame);
 
 	camera_info.write(m_camera_info);

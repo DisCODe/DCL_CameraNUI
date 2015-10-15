@@ -21,6 +21,28 @@
 namespace Processors {
 namespace CameraNUI {
 
+class TypeTranslator {
+public:
+	static int fromStr(const std::string & s)
+	{
+		if (s == "FREENECT_VIDEO_RGB") return FREENECT_VIDEO_RGB;
+		if (s == "FREENECT_VIDEO_BAYER") return FREENECT_VIDEO_BAYER;
+		if (s == "FREENECT_VIDEO_IR_8BIT") return FREENECT_VIDEO_IR_8BIT;
+        return FREENECT_VIDEO_RGB;
+	}
+
+	static std::string toStr(int t)
+	{
+		switch(t) {
+			case FREENECT_VIDEO_RGB:     return "FREENECT_VIDEO_RGB";
+			case FREENECT_VIDEO_BAYER:     return "FREENECT_VIDEO_BAYER";
+			case FREENECT_VIDEO_IR_8BIT: return "FREENECT_VIDEO_IR_8BIT";
+			default:             return "FREENECT_VIDEO_RGB";
+		}
+	}
+};
+
+
 /*!
  * \class CameraNUI
  * \brief CameraNUI processor class.
@@ -80,7 +102,8 @@ protected:
 	Base::Property <bool> sync;
 	Base::Property <int> index;
 	Base::Property <int> angle;
-	
+	Base::Property <int, TypeTranslator> imageType;
+
 	Base::DataStreamIn <int> in_angle;
 
 	Base::DataStreamIn <Base::UnitType> trigger;
@@ -93,7 +116,7 @@ protected:
 	cv::Mat show;
 
 	Types::CameraInfo m_camera_info;
-	
+
 	Base::Property<bool> triggered;
 };
 
