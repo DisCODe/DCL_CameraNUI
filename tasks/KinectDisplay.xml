@@ -26,7 +26,7 @@
 				</Component>
 				
 				<Component name="ProcNorm" type="CameraNUI:DepthConverter" priority="2" bump="0">
-					<param name="depth_mode">normalized</param>
+					<param name="depth_mode">raw_map</param>
 				</Component>
 				
 				<Component name="ProcDisp" type="CameraNUI:DepthConverter" priority="3" bump="0">

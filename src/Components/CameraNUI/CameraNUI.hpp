@@ -42,6 +42,25 @@ public:
 	}
 };
 
+class DepthTypeTranslator {
+public:
+	static int fromStr(const std::string & s)
+	{
+		if (s == "FREENECT_DEPTH_MM") return FREENECT_DEPTH_MM;
+		if (s == "FREENECT_DEPTH_REGISTERED") return FREENECT_DEPTH_REGISTERED;
+        return FREENECT_DEPTH_MM;
+	}
+
+	static std::string toStr(int t)
+	{
+		switch(t) {
+			case FREENECT_DEPTH_MM:     return "FREENECT_DEPTH_MM";
+			case FREENECT_DEPTH_REGISTERED:     return "FREENECT_DEPTH_REGISTERED";
+			default: return "FREENECT_DEPTH_MM";
+		}
+	}
+};
+
 
 /*!
  * \class CameraNUI
@@ -103,6 +122,7 @@ protected:
 	Base::Property <int> index;
 	Base::Property <int> angle;
 	Base::Property <int, TypeTranslator> imageType;
+	Base::Property <int, DepthTypeTranslator> depthType;
 
 	Base::DataStreamIn <int> in_angle;
 
@@ -118,6 +138,7 @@ protected:
 	Types::CameraInfo m_camera_info;
 
 	Base::Property<bool> triggered;
+	
 };
 
 } //: namespace CameraNUI

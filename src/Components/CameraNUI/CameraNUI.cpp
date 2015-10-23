@@ -21,7 +21,8 @@ CameraNUI::CameraNUI(const std::string & name) :
 		index("index", 0),
 		angle("angle", 0, "range"),
 		triggered("triggered", false),
-		imageType("imageType", FREENECT_VIDEO_RGB, "combo" ) {
+		imageType("imageType", FREENECT_VIDEO_RGB, "combo" ),
+		depthType("depthType", FREENECT_DEPTH_MM, "combo" ) {
 
 	LOG(LTRACE)<< "Hello CameraNUI\n";
 	registerProperty(sync);
@@ -32,6 +33,10 @@ CameraNUI::CameraNUI(const std::string & name) :
 	imageType.addConstraint("FREENECT_VIDEO_BAYER");
 	imageType.addConstraint("FREENECT_VIDEO_IR_8BIT");
 	registerProperty(imageType);
+	
+	depthType.addConstraint("FREENECT_DEPTH_REGISTERED");
+	depthType.addConstraint("FREENECT_DEPTH_MM");
+	registerProperty(depthType);
 
 
 	angle.addConstraint("-45");
@@ -110,7 +115,7 @@ void CameraNUI::onNextImage() {
 	//
 
 	// retrieve depth image
-	ret = freenect_sync_get_depth((void**)&depth, &ts, index, FREENECT_DEPTH_REGISTERED);
+	ret = freenect_sync_get_depth((void**)&depth, &ts, index, depthType);
 	cv::Mat tmp_depth(480, 640, CV_16UC1, depth);
 	tmp_depth.copyTo(depthFrame);
 
