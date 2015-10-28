@@ -61,6 +61,25 @@ public:
 	}
 };
 
+class ResolutionTranslator {
+public:
+	static int fromStr(const std::string & s)
+	{
+		if (s == "FREENECT_RESOLUTION_MEDIUM") return FREENECT_RESOLUTION_MEDIUM;
+		if (s == "FREENECT_RESOLUTION_HIGH") return FREENECT_RESOLUTION_HIGH;
+        return FREENECT_RESOLUTION_MEDIUM;
+	}
+
+	static std::string toStr(int t)
+	{
+		switch(t) {
+			case FREENECT_RESOLUTION_MEDIUM: return "FREENECT_RESOLUTION_MEDIUM";
+			case FREENECT_RESOLUTION_HIGH:   return "FREENECT_RESOLUTION_HIGH";
+			default: return "FREENECT_RESOLUTION_MEDIUM";
+		}
+	}
+};
+
 
 /*!
  * \class CameraNUI
@@ -123,6 +142,7 @@ protected:
 	Base::Property <int> angle;
 	Base::Property <int, TypeTranslator> imageType;
 	Base::Property <int, DepthTypeTranslator> depthType;
+	Base::Property <int, ResolutionTranslator> resolution;
 
 	Base::DataStreamIn <int> in_angle;
 
@@ -131,7 +151,8 @@ protected:
 	Base::DataStreamOut <cv::Mat> outDepthMap;
 	Base::DataStreamOut <Types::CameraInfo> camera_info;
 
-	cv::Mat cameraFrame;
+	cv::Mat cameraFrameVga;
+	cv::Mat cameraFrameSxga;
 	cv::Mat depthFrame;
 	cv::Mat show;
 
